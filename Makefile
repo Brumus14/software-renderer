@@ -9,6 +9,8 @@ performance_flags = -O3 -flto
 debug_flags = -g -O0 -Wall -Wextra
 output = software-renderer
 
+run:
+	./build/$(output)
 all:
 	@$(CC) $(addprefix -I,$(include)) $(addprefix -L,$(lib_include)) $(src) $(addprefix -l,$(lib)) $(additional_flags) -o build/$(output)
 performance:

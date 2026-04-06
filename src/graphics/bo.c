@@ -65,7 +65,7 @@ void bo_bind(struct bo *bo) {
     GL_CALL(glBindBuffer(gl_type, bo->gl_id));
 }
 
-void bo_upload(struct bo *bo, unsigned int data_size, void *data,
+void bo_upload(struct bo *bo, unsigned int data_size, const void *data,
                enum bo_usage usage) {
     if (!bo) {
         fprintf(stderr, "bo_upload: buffer object is null\n");

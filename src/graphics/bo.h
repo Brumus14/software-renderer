@@ -30,7 +30,7 @@ GLenum to_gl_type(enum bo_type type);
 void bo_init(struct bo *bo, enum bo_type type);
 void bo_destroy(struct bo *bo);
 void bo_bind(struct bo *bo);
-void bo_upload(struct bo *bo, unsigned int data_size, void *data,
+void bo_upload(struct bo *bo, unsigned int data_size, const void *data,
                enum bo_usage usage);
 
 #endif
