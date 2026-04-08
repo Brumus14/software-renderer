@@ -17,6 +17,7 @@ const unsigned int indices[] = {
 };
 // clang-format on
 
+// Pass in width and height?
 void frame_buffer_init(struct frame_buffer *frame_buffer) {
     frame_buffer->width = 0;
     frame_buffer->height = 0;
@@ -47,13 +48,11 @@ void frame_buffer_init(struct frame_buffer *frame_buffer) {
 }
 
 void frame_buffer_generate(struct frame_buffer *frame_buffer,
-                           unsigned int width, unsigned int height,
                            struct pixel *data) {
-    frame_buffer->width = width;
-    frame_buffer->height = height;
-
-    GL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
-                         GL_UNSIGNED_BYTE, data));
+    GL_CALL(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
+    GL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, frame_buffer->width,
+                         frame_buffer->height, 0, GL_RGB, GL_UNSIGNED_BYTE,
+                         data));
 }
 
 void frame_buffer_draw(struct frame_buffer *frame_buffer) {

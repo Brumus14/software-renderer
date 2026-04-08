@@ -24,7 +24,6 @@ struct frame_buffer {
 
 void frame_buffer_init(struct frame_buffer *frame_buffer);
 void frame_buffer_generate(struct frame_buffer *frame_buffer,
-                           unsigned int width, unsigned int height,
                            struct pixel *data);
 void frame_buffer_draw(struct frame_buffer *frame_buffer);
 

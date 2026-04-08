@@ -88,25 +88,29 @@ int mouse_button_to_glfw(enum mouse_button button) {
 
 void glfw_framebuffer_size_callback(GLFWwindow *glfw_window, int width,
                                     int height) {
-    struct window *window_pointer =
+    struct window *window =
         (struct window *)glfwGetWindowUserPointer(glfw_window);
 
     renderer_set_viewport(0, 0, width, height);
-    glfwGetWindowSize(window_pointer->glfw_window, &window_pointer->width,
-                      &window_pointer->height);
+    glfwGetWindowSize(window->glfw_window, &window->width, &window->height);
+
+    window->resize_callback(window, width, height, window->resize_callback_arg);
 }
 
 void glfw_scroll_callback(GLFWwindow *glfw_window, double xoffset,
                           double yoffset) {
-    struct window *window_pointer =
+    struct window *window =
         (struct window *)glfwGetWindowUserPointer(glfw_window);
 
-    /*if (window_pointer->scroll_callback) {*/
-    /*    window_pointer->scroll_callback(window_pointer, xoffset, yoffset);*/
+    /*if (window->scroll_callback) {*/
+    /*    window->scroll_callback(window, xoffset, yoffset);*/
     /*}*/
 
-    window_pointer->mouse.scroll_offset_x += xoffset;
-    window_pointer->mouse.scroll_offset_y += yoffset;
+    window->mouse.scroll_offset_x += xoffset;
+    window->mouse.scroll_offset_y += yoffset;
+
+    window->scroll_callback(window, xoffset, yoffset,
+                            window->scroll_callback_arg);
 }
 
 void glfw_init() {
@@ -191,19 +195,23 @@ void window_update_delta_time(struct window *window) {
     window->previous_time = current_time;
 }
 
-void window_set_framebuffer_size_callback(struct window *window,
-                                          window_resize_callback function) {
-    window->framebuffer_size_callback = function;
+void window_set_resize_callback(struct window *window,
+                                window_resize_callback function, void *arg) {
+    window->resize_callback = function;
+    window->resize_callback_arg = arg;
 }
 
-void window_set_cursor_pos_callback(struct window *window,
-                                    window_cursor_position_callback function) {
-    window->cursor_pos_callback = function;
+void window_set_cursor_position_callback(
+    struct window *window, window_cursor_position_callback function,
+    void *arg) {
+    window->cursor_position_callback = function;
+    window->cursor_position_callback_arg = arg;
 }
 
 void window_set_scroll_callback(struct window *window,
-                                window_scroll_callback function) {
+                                window_scroll_callback function, void *arg) {
     window->scroll_callback = function;
+    window->scroll_callback_arg = arg;
 }
 
 // Update mouse buttons
