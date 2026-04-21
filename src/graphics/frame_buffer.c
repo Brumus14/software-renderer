@@ -65,15 +65,16 @@ void frame_buffer_begin(struct frame_buffer *frame_buffer) {
             frame_buffer->pixels,
             frame_buffer->height * frame_buffer->width * sizeof(struct pixel));
 
-        for (int i = 0; i < frame_buffer->height * frame_buffer->width; i++) {
-            frame_buffer->pixels[i] = frame_buffer->clear_colour;
-        }
-
         frame_buffer->resized = false;
+    }
+
+    for (int i = 0; i < frame_buffer->height * frame_buffer->width; i++) {
+        frame_buffer->pixels[i] = frame_buffer->clear_colour;
     }
 }
 
 void frame_buffer_generate(struct frame_buffer *frame_buffer) {
+    texture_bind(&frame_buffer->texture);
     GL_CALL(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
     GL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, frame_buffer->width,
                          frame_buffer->height, 0, GL_RGB, GL_UNSIGNED_BYTE,

@@ -90,6 +90,57 @@ void draw_line(struct frame_buffer *frame_buffer, int x0, int y0, int x1,
     }
 }
 
+bool is_top_left_edge(int x0, int y0, int x1, int y1) {
+    // Top edge
+    if (y0 == y1 && x1 > x0) {
+        return true;
+    }
+
+    // Left edge
+    if (y1 > y0) {
+        return true;
+    }
+
+    return false;
+}
+
+// TODO: Take floats instead?
+void draw_triangle(struct frame_buffer *frame_buffer, int x0, int y0, int x1,
+                   int y1, int x2, int y2, int red, int green, int blue) {
+    int min_x = x0 < x1 ? x0 : x1;
+    min_x = x2 < min_x ? x2 : min_x;
+
+    int min_y = y0 < y1 ? y0 : y1;
+    min_y = y2 < min_y ? y2 : min_y;
+
+    int max_x = x0 > x1 ? x0 : x1;
+    max_x = x2 > max_x ? x2 : max_x;
+
+    int max_y = y0 > y1 ? y0 : y1;
+    max_y = y2 > max_y ? y2 : max_y;
+
+    int edge1_bias = is_top_left_edge(x0, y0, x1, y1) ? 0 : -1;
+    int edge2_bias = is_top_left_edge(x1, y1, x2, y2) ? 0 : -1;
+    int edge3_bias = is_top_left_edge(x2, y2, x0, y0) ? 0 : -1;
+
+    for (int y = min_y; y <= max_y; y++) {
+        for (int x = min_x; x <= max_x; x++) {
+            int edge1_distance =
+                (y - y0) * (x1 - x0) - (x - x0) * (y1 - y0) + edge1_bias;
+            int edge2_distance =
+                (y - y1) * (x2 - x1) - (x - x1) * (y2 - y1) + edge2_bias;
+            int edge3_distance =
+                (y - y2) * (x0 - x2) - (x - x2) * (y0 - y2) + edge3_bias;
+
+            if (edge1_distance >= 0 && edge2_distance >= 0 &&
+                edge3_distance >= 0) {
+                frame_buffer_set_pixel(frame_buffer, x, y,
+                                       (struct pixel){red, green, blue});
+            }
+        }
+    }
+}
+
 int main() {
     struct window window;
     window_init(&window, 800, 600, "Software Renderer!");
@@ -115,10 +166,8 @@ int main() {
 
         frame_buffer_begin(&frame_buffer);
 
-        draw_line(&frame_buffer, 100, 150, 600, 400);
-        draw_line(&frame_buffer, 100, 150, 400, 200);
-        draw_line(&frame_buffer, 400, 200, 600, 400);
-        draw_line(&frame_buffer, 0, 400, 100, 600);
+        draw_triangle(&frame_buffer, 500, 500, 200, 300, 700, 100, 0, 255, 0);
+        draw_triangle(&frame_buffer, 200, 300, 100, 100, 700, 100, 255, 0, 0);
 
         frame_buffer_generate(&frame_buffer);
         frame_buffer_draw(&frame_buffer);
