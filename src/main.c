@@ -104,40 +104,81 @@ bool is_top_left_edge(int x0, int y0, int x1, int y1) {
     return false;
 }
 
+struct vertex {
+    int x;
+    int y;
+    int r;
+    int g;
+    int b;
+};
+
 // TODO: Take floats instead?
-void draw_triangle(struct frame_buffer *frame_buffer, int x0, int y0, int x1,
-                   int y1, int x2, int y2, int red, int green, int blue) {
-    int min_x = x0 < x1 ? x0 : x1;
-    min_x = x2 < min_x ? x2 : min_x;
+void draw_triangle(struct frame_buffer *frame_buffer, struct vertex *v1,
+                   struct vertex *v2, struct vertex *v3) {
+    int min_x = v1->x < v2->x ? v1->x : v2->x;
+    min_x = v3->x < min_x ? v3->x : min_x;
 
-    int min_y = y0 < y1 ? y0 : y1;
-    min_y = y2 < min_y ? y2 : min_y;
+    int min_y = v1->y < v2->y ? v1->y : v2->y;
+    min_y = v3->y < min_y ? v3->y : min_y;
 
-    int max_x = x0 > x1 ? x0 : x1;
-    max_x = x2 > max_x ? x2 : max_x;
+    int max_x = v1->x > v2->x ? v1->x : v2->x;
+    max_x = v3->x > max_x ? v3->x : max_x;
 
-    int max_y = y0 > y1 ? y0 : y1;
-    max_y = y2 > max_y ? y2 : max_y;
+    int max_y = v1->y > v2->y ? v1->y : v2->y;
+    max_y = v3->y > max_y ? v3->y : max_y;
 
-    int edge1_bias = is_top_left_edge(x0, y0, x1, y1) ? 0 : -1;
-    int edge2_bias = is_top_left_edge(x1, y1, x2, y2) ? 0 : -1;
-    int edge3_bias = is_top_left_edge(x2, y2, x0, y0) ? 0 : -1;
+    int edge1_bias = is_top_left_edge(v3->x, v3->y, v2->x, v2->y) ? 0 : -1;
+    int edge2_bias = is_top_left_edge(v1->x, v1->y, v3->x, v3->y) ? 0 : -1;
+    int edge3_bias = is_top_left_edge(v2->x, v2->y, v1->x, v1->y) ? 0 : -1;
 
     for (int y = min_y; y <= max_y; y++) {
         for (int x = min_x; x <= max_x; x++) {
-            int edge1_distance =
-                (y - y0) * (x1 - x0) - (x - x0) * (y1 - y0) + edge1_bias;
-            int edge2_distance =
-                (y - y1) * (x2 - x1) - (x - x1) * (y2 - y1) + edge2_bias;
-            int edge3_distance =
-                (y - y2) * (x0 - x2) - (x - x2) * (y0 - y2) + edge3_bias;
+            int edge1_distance = (y - v2->y) * (v3->x - v2->x) -
+                                 (x - v2->x) * (v3->y - v2->y) + edge1_bias;
+            int edge2_distance = (y - v3->y) * (v1->x - v3->x) -
+                                 (x - v3->x) * (v1->y - v3->y) + edge2_bias;
+            int edge3_distance = (y - v1->y) * (v2->x - v1->x) -
+                                 (x - v1->x) * (v2->y - v1->y) + edge3_bias;
+
+            int edge1_x = v3->x - v2->x;
+            int edge1_y = v3->y - v2->y;
+            int edge2_x = v1->x - v3->x;
+            int edge2_y = v1->y - v3->y;
+            int edge3_x = v2->x - v1->x;
+            int edge3_y = v2->y - v1->y;
+            float area = (v3->x - v1->x) * (v2->y - v1->y) -
+                         (v3->y - v1->y) * (v2->x - v1->x);
 
             if (edge1_distance >= 0 && edge2_distance >= 0 &&
                 edge3_distance >= 0) {
+                float b1 = ((x - v2->x) * (v3->y - v2->y) -
+                            (y - v2->y) * (v3->x - v2->x)) /
+                           area;
+
+                float b2 = ((x - v3->x) * (v1->y - v3->y) -
+                            (y - v3->y) * (v1->x - v3->x)) /
+                           area;
+
+                float b3 = ((x - v1->x) * (v2->y - v1->y) -
+                            (y - v1->y) * (v2->x - v1->x)) /
+                           area;
+
+                int r = b1 * v1->r + b2 * v2->r + b3 * v3->r;
+                int g = b1 * v1->g + b2 * v2->g + b3 * v3->g;
+                int b = b1 * v1->b + b2 * v2->b + b3 * v3->b;
+
                 frame_buffer_set_pixel(frame_buffer, x, y,
-                                       (struct pixel){red, green, blue});
+                                       (struct pixel){r, g, b});
             }
         }
+    }
+}
+
+void draw_triangles(struct frame_buffer *frame_buffer, struct vertex *vertices,
+                    unsigned int *indices, unsigned int index_count) {
+    for (int i = 0; i < index_count; i += 3) {
+        draw_triangle(frame_buffer, &vertices[indices[i]],
+                      &vertices[indices[i + 1]], &vertices[indices[i + 2]]);
     }
 }
 
@@ -166,8 +207,13 @@ int main() {
 
         frame_buffer_begin(&frame_buffer);
 
-        draw_triangle(&frame_buffer, 500, 500, 200, 300, 700, 100, 0, 255, 0);
-        draw_triangle(&frame_buffer, 200, 300, 100, 100, 700, 100, 255, 0, 0);
+        struct vertex vertices[] = {
+            {100, 100, 255, 0, 0},
+            {1200, 100, 0, 255, 0},
+            {900, 900, 0, 0, 255},
+        };
+
+        draw_triangle(&frame_buffer, vertices, vertices + 1, vertices + 2);
 
         frame_buffer_generate(&frame_buffer);
         frame_buffer_draw(&frame_buffer);
