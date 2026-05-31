@@ -22,8 +22,8 @@ void shader_program_destroy(struct shader_program *program) {
 
 void shader_program_from_files(struct shader_program *program,
                                char *vertex_path, char *fragment_path) {
-    char *vertex_source = read_file(vertex_path);
-    char *fragment_source = read_file(fragment_path);
+    char *vertex_source = io_read_file(vertex_path);
+    char *fragment_source = io_read_file(fragment_path);
 
     if (!vertex_source) {
         fprintf(stderr, "shader_program_from_files: vertex source is null\n");
