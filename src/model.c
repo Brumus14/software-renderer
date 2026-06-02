@@ -127,9 +127,9 @@ construct_vertex(struct vertex_coordinate *coordinate,
     vertex.texture_x = texture_coordinate->x;
     vertex.texture_y = texture_coordinate->y;
 
-    vertex.r = normal->x;
-    vertex.g = normal->y;
-    vertex.b = normal->z;
+    vertex.r = (normal->x + 1) / 2;
+    vertex.g = (normal->y + 1) / 2;
+    vertex.b = (normal->z + 1) / 2;
 
     return vertex;
 }
@@ -186,12 +186,12 @@ struct model model_from_obj(const char *path) {
         for (int i = 0; i <= face->face_element_count - 3; i++) {
             struct vertex vertex1 = construct_vertex(
                 dynamic_array_get(&coordinates,
-                                  face->face_elements[i].coordinate_index - 1),
+                                  face->face_elements[0].coordinate_index - 1),
                 dynamic_array_get(
                     &texture_coordinates,
-                    face->face_elements[i].texture_coordinate_index - 1),
+                    face->face_elements[0].texture_coordinate_index - 1),
                 dynamic_array_get(&normals,
-                                  face->face_elements[i].normal_index - 1));
+                                  face->face_elements[0].normal_index - 1));
 
             struct vertex vertex2 = construct_vertex(
                 dynamic_array_get(&coordinates,
@@ -227,25 +227,4 @@ struct model model_from_obj(const char *path) {
     model.vertex_count = vertices.element_count;
 
     return model;
-}
-
-void model_to_buffers(struct model *model, struct vertex **vertices,
-                      unsigned int *vertex_count) {
-    // *vertex_count = model->face_count * 3;
-    // *vertices = malloc(*vertex_count * sizeof(struct vertex));
-    //
-    // for (int f = 0; f < model->face_count; f++) {
-    //     for (int i = 0; i < 3; i++) {
-    //         struct vertex_coordinate *coordinate =
-    //             &model->coordinates
-    //                  [model->faces[f].face_elements[i].coordinate_index];
-    //
-    //         printf("%d\n", f * 3 + i);
-    //         // vertices[f * 3 + i]->x = coordinate->x;
-    //         // vertices[f * 3 + i]->y = coordinate->y;
-    //         // vertices[f * 3 + i]->z = coordinate->z;
-    //         printf("%f, %f, %f\n", coordinate->x, coordinate->y,
-    //         coordinate->z);
-    //     }
-    // }
 }

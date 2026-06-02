@@ -37,7 +37,5 @@ struct model {
 };
 
 struct model model_from_obj(const char *path);
-void model_to_buffers(struct model *model, struct vertex **vertices,
-                      unsigned int *vertex_count);
 
 #endif

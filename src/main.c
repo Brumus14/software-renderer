@@ -174,10 +174,6 @@ void draw_triangle(struct frame_buffer *frame_buffer, struct vertex *v1,
 
 void draw_triangles(struct frame_buffer *frame_buffer, struct vertex *vertices,
                     unsigned int vertex_count) {
-    // printf("%f %f %f\n", vertices[0].x, vertices[0].y, vertices[0].z);
-    // printf("%f %f %f\n", vertices[1].x, vertices[1].y, vertices[1].z);
-    // printf("%f %f %f\n", vertices[2].x, vertices[2].y, vertices[2].z);
-    // draw_triangle(frame_buffer, &vertices[0], &vertices[1], &vertices[2]);
     for (int i = 0; i < vertex_count; i += 3) {
         draw_triangle(frame_buffer, &vertices[i], &vertices[i + 1],
                       &vertices[i + 2]);
@@ -210,13 +206,7 @@ int main() {
 
     window_set_resize_callback(&window, resize_callback, resize_callback_args);
 
-    struct model cube = model_from_obj("res/models/monkey.obj");
-
-    for (int i = 0; i < cube.vertex_count; i++) {
-        struct vertex v = cube.vertices[i];
-        printf("%f, %f, %f, %f, %f, %f, %f, %f\n", v.x, v.y, v.z, v.texture_x,
-               v.texture_y, v.r, v.g, v.b);
-    }
+    struct model model = model_from_obj("res/models/thing.obj");
 
     while (!window_should_close(&window)) {
         renderer_clear_buffers();
@@ -226,7 +216,7 @@ int main() {
 
         frame_buffer_begin(&frame_buffer);
 
-        draw_triangles(&frame_buffer, cube.vertices, cube.vertex_count);
+        draw_triangles(&frame_buffer, model.vertices, model.vertex_count);
 
         frame_buffer_generate(&frame_buffer);
         frame_buffer_draw(&frame_buffer);
