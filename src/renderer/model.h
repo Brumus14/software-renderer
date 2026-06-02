@@ -2,6 +2,7 @@
 #define MODEL_H
 
 #include "vertex.h"
+#include "renderer.h"
 
 struct vertex_coordinate {
     float x;
@@ -37,5 +38,6 @@ struct model {
 };
 
 struct model model_from_obj(const char *path);
+void model_draw(struct model *model, struct frame_buffer *frame_buffer);
 
 #endif

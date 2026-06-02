@@ -1,5 +1,5 @@
-#ifndef RENDERER_H
-#define RENDERER_H
+#ifndef GRAPHICS_RENDERER_H
+#define GRAPHICS_RENDERER_H
 
 #include "glad/glad.h"
 

@@ -1,10 +1,10 @@
 #ifndef FRAME_BUFFER_H
 #define FRAME_BUFFER_H
 
-#include "bo.h"
-#include "shader_program.h"
-#include "texture.h"
-#include "vao.h"
+#include "../graphics/bo.h"
+#include "../graphics/shader_program.h"
+#include "../graphics/texture.h"
+#include "../graphics/vao.h"
 #include <stdbool.h>
 
 struct pixel {
@@ -20,6 +20,7 @@ struct frame_buffer {
     unsigned int new_width;
     unsigned int new_height;
     struct pixel *pixels;
+    float *depths;
     struct pixel clear_colour;
     struct vao vao;
     struct bo vbo;
@@ -33,9 +34,15 @@ void frame_buffer_init(struct frame_buffer *frame_buffer, unsigned int width,
 void frame_buffer_begin(struct frame_buffer *frame_buffer);
 void frame_buffer_generate(struct frame_buffer *frame_buffer);
 void frame_buffer_draw(struct frame_buffer *frame_buffer);
+void frame_buffer_clear_pixels(struct frame_buffer *frame_buffer);
 bool frame_buffer_get_pixel(struct frame_buffer *frame_buffer, unsigned int x,
                             unsigned int y, struct pixel *result);
 bool frame_buffer_set_pixel(struct frame_buffer *frame_buffer, unsigned int x,
-                            unsigned int y, struct pixel value);
+                            unsigned int y, float depth, struct pixel value);
+void frame_buffer_clear_depths(struct frame_buffer *frame_buffer);
+bool frame_buffer_get_depth(struct frame_buffer *frame_buffer, unsigned int x,
+                            unsigned int y, float *result);
+bool frame_buffer_set_depth(struct frame_buffer *frame_buffer, unsigned int x,
+                            unsigned int y, float value);
 
 #endif

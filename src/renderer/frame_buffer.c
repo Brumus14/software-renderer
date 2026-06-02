@@ -1,9 +1,10 @@
 #include "frame_buffer.h"
 
-#include "renderer.h"
-#include "vao.h"
+#include "../graphics/renderer.h"
+#include "../graphics/vao.h"
 #include "../util/gl.h"
 #include <stdlib.h>
+#include <math.h>
 
 // clang-format off
 const float vertices[] = {
@@ -29,6 +30,8 @@ void frame_buffer_init(struct frame_buffer *frame_buffer, unsigned int width,
     frame_buffer->new_height = 0;
     frame_buffer->pixels = malloc(frame_buffer->height * frame_buffer->width *
                                   sizeof(struct pixel));
+    frame_buffer->depths =
+        malloc(frame_buffer->height * frame_buffer->width * sizeof(float));
     frame_buffer->clear_colour = (struct pixel){0, 0, 0};
 
     vao_init(&frame_buffer->vao);
@@ -65,12 +68,15 @@ void frame_buffer_begin(struct frame_buffer *frame_buffer) {
             frame_buffer->pixels,
             frame_buffer->height * frame_buffer->width * sizeof(struct pixel));
 
+        frame_buffer->depths =
+            realloc(frame_buffer->depths,
+                    frame_buffer->height * frame_buffer->width * sizeof(float));
+
         frame_buffer->resized = false;
     }
 
-    for (int i = 0; i < frame_buffer->height * frame_buffer->width; i++) {
-        frame_buffer->pixels[i] = frame_buffer->clear_colour;
-    }
+    frame_buffer_clear_pixels(frame_buffer);
+    frame_buffer_clear_depths(frame_buffer);
 }
 
 void frame_buffer_generate(struct frame_buffer *frame_buffer) {
@@ -89,6 +95,12 @@ void frame_buffer_draw(struct frame_buffer *frame_buffer) {
     renderer_draw_elements(DRAW_MODE_TRIANGLES, 6, INDEX_TYPE_UNSIGNED_INT);
 }
 
+void frame_buffer_clear_pixels(struct frame_buffer *frame_buffer) {
+    for (int i = 0; i < frame_buffer->height * frame_buffer->width; i++) {
+        frame_buffer->pixels[i] = frame_buffer->clear_colour;
+    }
+}
+
 bool frame_buffer_get_pixel(struct frame_buffer *frame_buffer, unsigned int x,
                             unsigned int y, struct pixel *result) {
     if (x >= frame_buffer->width || y >= frame_buffer->height) {
@@ -100,11 +112,41 @@ bool frame_buffer_get_pixel(struct frame_buffer *frame_buffer, unsigned int x,
 }
 
 bool frame_buffer_set_pixel(struct frame_buffer *frame_buffer, unsigned int x,
-                            unsigned int y, struct pixel value) {
+                            unsigned int y, float depth, struct pixel value) {
     if (x >= frame_buffer->width || y >= frame_buffer->height) {
         return false;
     }
 
-    frame_buffer->pixels[x + y * frame_buffer->width] = value;
+    if (depth <= frame_buffer->depths[x + y * frame_buffer->width]) {
+        frame_buffer->pixels[x + y * frame_buffer->width] = value;
+        frame_buffer->depths[x + y * frame_buffer->width] = depth;
+    }
+
+    return true;
+}
+
+void frame_buffer_clear_depths(struct frame_buffer *frame_buffer) {
+    for (int i = 0; i < frame_buffer->height * frame_buffer->width; i++) {
+        frame_buffer->depths[i] = INFINITY;
+    }
+}
+
+bool frame_buffer_get_depth(struct frame_buffer *frame_buffer, unsigned int x,
+                            unsigned int y, float *result) {
+    if (x >= frame_buffer->width || y >= frame_buffer->height) {
+        return false;
+    }
+
+    *result = frame_buffer->depths[x + y * frame_buffer->width];
+    return true;
+}
+
+bool frame_buffer_set_depth(struct frame_buffer *frame_buffer, unsigned int x,
+                            unsigned int y, float value) {
+    if (x >= frame_buffer->width || y >= frame_buffer->height) {
+        return false;
+    }
+
+    frame_buffer->depths[x + y * frame_buffer->width] = value;
     return true;
 }
