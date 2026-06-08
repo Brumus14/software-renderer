@@ -5,6 +5,7 @@
 #include <string.h>
 #include "../util/io.h"
 #include "../data_structures/dynamic_array.h"
+#include "camera.h"
 #include "vertex.h"
 
 char *skip_whitespace(char *pointer) {
@@ -266,16 +267,46 @@ struct model model_from_obj(const char *path) {
 
             triangle_count++;
         }
+
+        free(face->face_elements);
     }
+
+    dynamic_array_destroy(&coordinates);
+    dynamic_array_destroy(&texture_coordinates);
+    dynamic_array_destroy(&normals);
+    dynamic_array_destroy(&faces);
 
     struct model model;
 
     model.vertices = vertices.array;
     model.vertex_count = vertices.element_count;
+    model.projected_vertices =
+        malloc(model.vertex_count * sizeof(struct vertex));
 
     return model;
 }
 
-void model_draw(struct model *model, struct frame_buffer *frame_buffer) {
-    renderer_draw_triangles(frame_buffer, model->vertices, model->vertex_count);
+void model_destroy(struct model *model) {
+    free(model->vertices);
+    free(model->projected_vertices);
+}
+
+void model_draw(struct model *model, struct camera *camera,
+                struct frame_buffer *frame_buffer) {
+    for (int i = 0; i < model->vertex_count; i++) {
+        struct vec3d projected_coordinates =
+            camera_project(camera, (struct vec3d){
+                                       model->vertices[i].x,
+                                       model->vertices[i].y,
+                                       model->vertices[i].z,
+                                   });
+
+        model->projected_vertices[i] = model->vertices[i];
+        model->projected_vertices[i].x = projected_coordinates.x;
+        model->projected_vertices[i].y = projected_coordinates.y;
+        model->projected_vertices[i].z = projected_coordinates.z;
+    }
+
+    renderer_draw_triangles(frame_buffer, model->projected_vertices,
+                            model->vertex_count);
 }

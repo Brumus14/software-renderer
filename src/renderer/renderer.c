@@ -103,15 +103,19 @@ void renderer_draw_triangle(struct frame_buffer *frame_buffer,
 
     int min_x = v1_x < v2_x ? v1_x : v2_x;
     min_x = v3_x < min_x ? v3_x : min_x;
+    min_x = min_x < 0 ? 0 : min_x;
 
     int min_y = v1_y < v2_y ? v1_y : v2_y;
     min_y = v3_y < min_y ? v3_y : min_y;
+    min_y = min_y < 0 ? 0 : min_y;
 
     int max_x = v1_x > v2_x ? v1_x : v2_x;
     max_x = v3_x > max_x ? v3_x : max_x;
+    max_x = max_x > frame_buffer->width ? frame_buffer->width : max_x;
 
     int max_y = v1_y > v2_y ? v1_y : v2_y;
     max_y = v3_y > max_y ? v3_y : max_y;
+    max_y = max_y > frame_buffer->height ? frame_buffer->height : max_y;
 
     int edge1_bias = is_top_left_edge(v3_x, v3_y, v2_x, v2_y) ? 0 : -1;
     int edge2_bias = is_top_left_edge(v1_x, v1_y, v3_x, v3_y) ? 0 : -1;

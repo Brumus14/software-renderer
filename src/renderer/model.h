@@ -3,6 +3,7 @@
 
 #include "vertex.h"
 #include "renderer.h"
+#include "camera.h"
 
 struct vertex_coordinate {
     float x;
@@ -35,9 +36,12 @@ struct face {
 struct model {
     struct vertex *vertices;
     unsigned int vertex_count;
+    struct vertex *projected_vertices;
 };
 
 struct model model_from_obj(const char *path);
-void model_draw(struct model *model, struct frame_buffer *frame_buffer);
+void model_draw(struct model *model, struct camera *camera,
+                struct frame_buffer *frame_buffer);
+void model_destroy(struct model *model);
 
 #endif
