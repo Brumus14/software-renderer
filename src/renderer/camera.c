@@ -17,6 +17,8 @@ void generate_view_matrix(struct camera *camera) {
          -vec3d_dot_product(forward, camera->position)},
         {0, 0, 0, 1},
     }};
+
+    camera->view_matrix_stale = false;
 }
 
 void generate_projection_matrix(struct camera *camera) {
@@ -48,6 +50,8 @@ void generate_projection_matrix(struct camera *camera) {
             0,
         },
     }};
+
+    camera->projection_matrix_stale = false;
 }
 
 void camera_init(struct camera *camera, struct vec3d position,
@@ -94,23 +98,11 @@ void camera_move(struct camera *camera, struct vec3d movement_delta) {
     position_delta.y += movement_delta.y;
 
     camera->position = vec3d_add(camera->position, position_delta);
-    vec3d_print(camera->position);
-    putchar('\n');
     camera->view_matrix_stale = true;
-}
-
-void camera_set_aspect_ratio(struct camera *camera, double aspect_ratio) {
-    camera->aspect_ratio = aspect_ratio;
-    camera->projection_matrix_stale = true;
 }
 
 void camera_set_rotation(struct camera *camera, struct vec3d rotation) {
     camera->rotation = rotation;
-    camera->view_matrix_stale = true;
-}
-
-void camera_set_fov(struct camera *camera, double fov) {
-    camera->fov = fov;
     camera->view_matrix_stale = true;
 }
 
@@ -119,18 +111,26 @@ void camera_rotate(struct camera *camera, struct vec3d rotation_delta) {
     camera_set_rotation(camera, new_rotation);
 }
 
+void camera_set_aspect_ratio(struct camera *camera, double aspect_ratio) {
+    camera->aspect_ratio = aspect_ratio;
+    camera->projection_matrix_stale = true;
+}
+
+void camera_set_fov(struct camera *camera, double fov) {
+    camera->fov = fov;
+    camera->view_matrix_stale = true;
+}
+
 void camera_update(struct camera *camera) {
     bool view_projection_matrix_stale = false;
 
     if (camera->view_matrix_stale) {
         generate_view_matrix(camera);
-        camera->view_matrix_stale = false;
         view_projection_matrix_stale = true;
     }
 
     if (camera->projection_matrix_stale) {
         generate_projection_matrix(camera);
-        camera->projection_matrix_stale = false;
         view_projection_matrix_stale = true;
     }
 
@@ -145,6 +145,8 @@ struct vec3d camera_project(struct camera *camera, struct vec3d point) {
         mat4d_multiply_vector(&camera->view_projection_matrix,
                               &(struct vec4d){point.x, point.y, point.z, 1.0});
 
-    return (struct vec3d){vector.x / vector.w, vector.y / vector.w,
-                          vector.z / vector.w};
+    double inverse_w = 1 / vector.w;
+
+    return (struct vec3d){vector.x * inverse_w, vector.y * inverse_w,
+                          vector.z * inverse_w};
 }

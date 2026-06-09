@@ -51,7 +51,8 @@ int main() {
 
     window_set_resize_callback(&window, resize_callback, resize_callback_args);
 
-    struct model model = model_from_obj("res/models/thing.obj");
+    struct model model = model_from_obj("res/models/high_res/lucy.obj",
+                                        (struct vec3d){}, VEC3D_ZERO);
 
     while (!window_should_close(&window)) {
         renderer_clear_buffers();
@@ -103,6 +104,7 @@ int main() {
 
         camera_update(&camera);
 
+        model_rotate(&model, (struct vec3d){0, 10, 0});
         model_draw(&model, &camera, &frame_buffer);
 
         frame_buffer_generate(&frame_buffer);

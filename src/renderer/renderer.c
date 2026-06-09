@@ -111,17 +111,25 @@ void renderer_draw_triangle(struct frame_buffer *frame_buffer,
 
     int max_x = v1_x > v2_x ? v1_x : v2_x;
     max_x = v3_x > max_x ? v3_x : max_x;
-    max_x = max_x > frame_buffer->width ? frame_buffer->width : max_x;
+    max_x = max_x >= frame_buffer->width ? frame_buffer->width - 1 : max_x;
 
     int max_y = v1_y > v2_y ? v1_y : v2_y;
     max_y = v3_y > max_y ? v3_y : max_y;
-    max_y = max_y > frame_buffer->height ? frame_buffer->height : max_y;
+    max_y = max_y >= frame_buffer->height ? frame_buffer->height - 1 : max_y;
 
     int edge1_bias = is_top_left_edge(v3_x, v3_y, v2_x, v2_y) ? 0 : -1;
     int edge2_bias = is_top_left_edge(v1_x, v1_y, v3_x, v3_y) ? 0 : -1;
     int edge3_bias = is_top_left_edge(v2_x, v2_y, v1_x, v1_y) ? 0 : -1;
 
     float area = (v3_x - v1_x) * (v2_y - v1_y) - (v3_y - v1_y) * (v2_x - v1_x);
+    float inverse_area = 1 / area;
+
+    int edge1_x = v3_x - v2_x;
+    int edge1_y = v3_y - v2_y;
+    int edge2_x = v1_x - v3_x;
+    int edge2_y = v1_y - v3_y;
+    int edge3_x = v2_x - v1_x;
+    int edge3_y = v2_y - v1_y;
 
     for (int y = min_y; y <= max_y; y++) {
         for (int x = min_x; x <= max_x; x++) {
@@ -132,13 +140,6 @@ void renderer_draw_triangle(struct frame_buffer *frame_buffer,
             int edge3_distance = (y - v1_y) * (v2_x - v1_x) -
                                  (x - v1_x) * (v2_y - v1_y) + edge3_bias;
 
-            int edge1_x = v3_x - v2_x;
-            int edge1_y = v3_y - v2_y;
-            int edge2_x = v1_x - v3_x;
-            int edge2_y = v1_y - v3_y;
-            int edge3_x = v2_x - v1_x;
-            int edge3_y = v2_y - v1_y;
-
             // Clockwise:
             // (edge1_distance <= 0 && edge2_distance <= 0 &&
             //  edge3_distance <= 0)
@@ -146,12 +147,12 @@ void renderer_draw_triangle(struct frame_buffer *frame_buffer,
             if (edge1_distance >= 0 && edge2_distance >= 0 &&
                 edge3_distance >= 0) {
                 float b1 =
-                    ((x - v2_x) * (v3_y - v2_y) - (y - v2_y) * (v3_x - v2_x)) /
-                    area;
+                    ((x - v2_x) * (v3_y - v2_y) - (y - v2_y) * (v3_x - v2_x)) *
+                    inverse_area;
 
                 float b2 =
-                    ((x - v3_x) * (v1_y - v3_y) - (y - v3_y) * (v1_x - v3_x)) /
-                    area;
+                    ((x - v3_x) * (v1_y - v3_y) - (y - v3_y) * (v1_x - v3_x)) *
+                    inverse_area;
 
                 float b3 = 1 - b1 - b2;
 

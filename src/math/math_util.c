@@ -9,11 +9,10 @@ double radians(double degrees) {
 
 struct vec3d rotation_to_direction(struct vec3d rotation) {
     struct vec3d direction;
-    rotation.y -= 90;
 
-    direction.x = cos(radians(rotation.y)) * cos(radians(rotation.x));
+    direction.x = sin(radians(rotation.y)) * cos(radians(rotation.x));
     direction.y = sin(radians(rotation.x));
-    direction.z = sin(radians(rotation.y)) * cos(radians(rotation.x));
+    direction.z = -cos(radians(rotation.y)) * cos(radians(rotation.x));
 
     vec3d_normalise(&direction);
 

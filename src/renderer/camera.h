@@ -24,10 +24,10 @@ void camera_init(struct camera *camera, struct vec3d position,
 struct vec3d camera_get_direction(struct camera *camera);
 void camera_set_position(struct camera *camera, struct vec3d position);
 void camera_move(struct camera *camera, struct vec3d movement_delta);
-void camera_set_aspect_ratio(struct camera *camera, double aspect_ratio);
 void camera_set_rotation(struct camera *camera, struct vec3d rotation);
-void camera_set_fov(struct camera *camera, double fov);
 void camera_rotate(struct camera *camera, struct vec3d rotation_delta);
+void camera_set_aspect_ratio(struct camera *camera, double aspect_ratio);
+void camera_set_fov(struct camera *camera, double fov);
 void camera_update(struct camera *camera);
 struct vec3d camera_project(struct camera *camera, struct vec3d point);
 

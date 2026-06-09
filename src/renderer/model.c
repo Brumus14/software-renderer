@@ -7,6 +7,24 @@
 #include "../data_structures/dynamic_array.h"
 #include "camera.h"
 #include "vertex.h"
+#include "../math/math_util.h"
+
+void generate_model_matrix(struct model *model) {
+    struct vec3d forward = model_get_direction(model);
+    struct vec3d world_up = (struct vec3d){0, 1, 0};
+    struct vec3d right =
+        vec3d_normalised(vec3d_cross_product(world_up, forward));
+    struct vec3d up = vec3d_cross_product(forward, right);
+
+    model->model_matrix = (struct mat4d){{
+        {right.x, right.y, right.z, model->position.x},
+        {up.x, up.y, up.z, model->position.y},
+        {forward.x, forward.y, forward.z, model->position.z},
+        {0, 0, 0, 1},
+    }};
+
+    model->model_matrix_stale = false;
+}
 
 char *skip_whitespace(char *pointer) {
     while (*pointer == ' ' || *pointer == '\t') {
@@ -175,7 +193,8 @@ struct vertex construct_vertex(struct dynamic_array *coordinates,
     return vertex;
 }
 
-struct model model_from_obj(const char *path) {
+struct model model_from_obj(const char *path, struct vec3d position,
+                            struct vec3d rotation) {
     struct dynamic_array coordinates;
     struct dynamic_array texture_coordinates;
     struct dynamic_array normals;
@@ -278,10 +297,14 @@ struct model model_from_obj(const char *path) {
 
     struct model model;
 
+    model.position = position;
+    model.rotation = rotation;
     model.vertices = vertices.array;
     model.vertex_count = vertices.element_count;
     model.projected_vertices =
         malloc(model.vertex_count * sizeof(struct vertex));
+    model.model_matrix = MAT4D_ZERO;
+    model.model_matrix_stale = true;
 
     return model;
 }
@@ -293,20 +316,80 @@ void model_destroy(struct model *model) {
 
 void model_draw(struct model *model, struct camera *camera,
                 struct frame_buffer *frame_buffer) {
+    if (model->model_matrix_stale) {
+        generate_model_matrix(model);
+    }
+
     for (int i = 0; i < model->vertex_count; i++) {
-        struct vec3d projected_coordinates =
+        struct vec4d model_coordinate = mat4d_multiply_vector(
+            &model->model_matrix, &(struct vec4d){
+                                      model->vertices[i].x,
+                                      model->vertices[i].y,
+                                      model->vertices[i].z,
+                                      1,
+                                  });
+
+        double inverse_w = 1 / model_coordinate.w;
+
+        struct vec3d camera_coordinate =
             camera_project(camera, (struct vec3d){
-                                       model->vertices[i].x,
-                                       model->vertices[i].y,
-                                       model->vertices[i].z,
+                                       model_coordinate.x * inverse_w,
+                                       model_coordinate.y * inverse_w,
+                                       model_coordinate.z * inverse_w,
                                    });
 
         model->projected_vertices[i] = model->vertices[i];
-        model->projected_vertices[i].x = projected_coordinates.x;
-        model->projected_vertices[i].y = projected_coordinates.y;
-        model->projected_vertices[i].z = projected_coordinates.z;
+        model->projected_vertices[i].x = camera_coordinate.x;
+        model->projected_vertices[i].y = camera_coordinate.y;
+        model->projected_vertices[i].z = camera_coordinate.z;
     }
 
     renderer_draw_triangles(frame_buffer, model->projected_vertices,
                             model->vertex_count);
+}
+
+struct vec3d model_get_direction(struct model *model) {
+    struct vec3d direction = rotation_to_direction(model->rotation);
+    direction.z *= -1;
+    return direction;
+}
+
+void model_set_position(struct model *model, struct vec3d position) {
+    model->position = position;
+    model->model_matrix_stale = true;
+}
+
+void model_move(struct model *model, struct vec3d movement_delta) {
+    struct vec3d position_delta = VEC3D_ZERO;
+
+    struct vec3d forwards = model_get_direction(model);
+    forwards.y = 0.0;
+    vec3d_normalise(&forwards);
+
+    position_delta = vec3d_add(
+        position_delta, vec3d_scalar_multiply(forwards, -movement_delta.z));
+
+    struct vec3d up;
+    vec3d_init(&up, 0.0, 1.0, 0.0);
+
+    position_delta =
+        vec3d_add(position_delta,
+                  vec3d_scalar_multiply(vec3d_normalised(vec3d_cross_product(
+                                            model_get_direction(model), up)),
+                                        movement_delta.x));
+
+    position_delta.y += movement_delta.y;
+
+    model->position = vec3d_add(model->position, position_delta);
+    model->model_matrix_stale = true;
+}
+
+void model_set_rotation(struct model *model, struct vec3d rotation) {
+    model->rotation = rotation;
+    model->model_matrix_stale = true;
+}
+
+void model_rotate(struct model *model, struct vec3d rotation_delta) {
+    struct vec3d new_rotation = vec3d_add(model->rotation, rotation_delta);
+    model_set_rotation(model, new_rotation);
 }
