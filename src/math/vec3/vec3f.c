@@ -19,17 +19,8 @@ void vec3f_normalise(struct vec3f *v) {
 }
 
 struct vec3f vec3f_normalised(struct vec3f v) {
-    struct vec3f result = VEC3F_ZERO;
-
-    float magnitude = sqrt(pow(v.x, 2) + pow(v.y, 2) + pow(v.z, 2));
-
-    if (magnitude > EPSILON) {
-        result.x = v.x / magnitude;
-        result.y = v.y / magnitude;
-        result.z = v.z / magnitude;
-    }
-
-    return result;
+    vec3f_normalise(&v);
+    return v;
 }
 
 void vec3f_to_glm(struct vec3f v, vec3 *destination) {
@@ -46,9 +37,7 @@ void vec3f_add_to(struct vec3f v1, struct vec3f v2, struct vec3f *dest) {
 
 struct vec3f vec3f_add(struct vec3f v1, struct vec3f v2) {
     struct vec3f result;
-
     vec3f_add_to(v1, v2, &result);
-
     return result;
 }
 
@@ -71,9 +60,7 @@ void vec3f_scalar_multiply_to(struct vec3f vec, float scalar,
 
 struct vec3f vec3f_scalar_multiply(struct vec3f vec, float scalar) {
     struct vec3f result;
-
     vec3f_scalar_multiply_to(vec, scalar, &result);
-
     return result;
 }
 

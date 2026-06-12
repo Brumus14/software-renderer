@@ -23,17 +23,8 @@ void vec3d_normalise(struct vec3d *v) {
 }
 
 struct vec3d vec3d_normalised(struct vec3d v) {
-    struct vec3d result = VEC3D_ZERO;
-
-    double magnitude = vec3d_magnitude(v);
-
-    if (magnitude > EPSILON) {
-        result.x = v.x / magnitude;
-        result.y = v.y / magnitude;
-        result.z = v.z / magnitude;
-    }
-
-    return result;
+    vec3d_normalise(&v);
+    return v;
 }
 
 void vec3d_to_glm(struct vec3d v, vec3 *destination) {
@@ -50,9 +41,7 @@ void vec3d_add_to(struct vec3d v1, struct vec3d v2, struct vec3d *dest) {
 
 struct vec3d vec3d_add(struct vec3d v1, struct vec3d v2) {
     struct vec3d result;
-
     vec3d_add_to(v1, v2, &result);
-
     return result;
 }
 
@@ -64,9 +53,7 @@ void vec3d_sub_to(struct vec3d v1, struct vec3d v2, struct vec3d *dest) {
 
 struct vec3d vec3d_sub(struct vec3d v1, struct vec3d v2) {
     struct vec3d result;
-
     vec3d_sub_to(v1, v2, &result);
-
     return result;
 }
 
@@ -79,9 +66,7 @@ void vec3d_scalar_multiply_to(struct vec3d v, double scalar,
 
 struct vec3d vec3d_scalar_multiply(struct vec3d v, double scalar) {
     struct vec3d result;
-
     vec3d_scalar_multiply_to(v, scalar, &result);
-
     return result;
 }
 
@@ -94,9 +79,7 @@ void vec3d_cross_product_to(struct vec3d v1, struct vec3d v2,
 
 struct vec3d vec3d_cross_product(struct vec3d v1, struct vec3d v2) {
     struct vec3d result;
-
     vec3d_cross_product_to(v1, v2, &result);
-
     return result;
 }
 
@@ -108,9 +91,7 @@ void vec3d_product_to(struct vec3d v1, struct vec3d v2, struct vec3d *dest) {
 
 struct vec3d vec3d_product(struct vec3d v1, struct vec3d v2) {
     struct vec3d result;
-
     vec3d_product_to(v1, v2, &result);
-
     return result;
 }
 
@@ -125,7 +106,3 @@ bool vec3d_equal(struct vec3d v1, struct vec3d v2) {
         return false;
     }
 }
-
-// vec3i vec3d_to_vec3i(struct vec3d v) {
-//     return (vec3i){round(vec.x), round(vec.y), round(vec.z)};
-// }

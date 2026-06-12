@@ -14,9 +14,7 @@ void vec3i_add_to(struct vec3i v1, struct vec3i v2, struct vec3i *dest) {
 
 struct vec3i vec3i_add(struct vec3i v1, struct vec3i v2) {
     struct vec3i result;
-
     vec3i_add_to(v1, v2, &result);
-
     return result;
 }
 
@@ -38,9 +36,7 @@ void vec3i_scalar_multiply_to(struct vec3i v, int scalar, struct vec3i *dest) {
 
 struct vec3i vec3i_scalar_multiply(struct vec3i v, int scalar) {
     struct vec3i result;
-
     vec3i_scalar_multiply_to(v, scalar, &result);
-
     return result;
 }
 
@@ -52,9 +48,7 @@ void vec3i_product_to(struct vec3i v1, struct vec3i v2, struct vec3i *dest) {
 
 struct vec3i vec3i_product(struct vec3i v1, struct vec3i v2) {
     struct vec3i result;
-
     vec3i_product_to(v1, v2, &result);
-
     return result;
 }
 

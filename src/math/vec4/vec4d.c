@@ -25,17 +25,8 @@ void vec4d_normalise(struct vec4d *v) {
 }
 
 struct vec4d vec4d_normalised(struct vec4d v) {
-    struct vec4d result = VEC4D_ZERO;
-
-    double magnitude = vec4d_magnitude(v);
-
-    if (magnitude > EPSILON) {
-        result.x = v.x / magnitude;
-        result.y = v.y / magnitude;
-        result.z = v.z / magnitude;
-        result.w = v.w / magnitude;
-    }
-
+    struct vec4d result = v;
+    vec4d_normalise(&result);
     return result;
 }
 
@@ -55,9 +46,7 @@ void vec4d_add_to(struct vec4d v1, struct vec4d v2, struct vec4d *dest) {
 
 struct vec4d vec4d_add(struct vec4d v1, struct vec4d v2) {
     struct vec4d result;
-
     vec4d_add_to(v1, v2, &result);
-
     return result;
 }
 
@@ -70,9 +59,7 @@ void vec4d_sub_to(struct vec4d v1, struct vec4d v2, struct vec4d *dest) {
 
 struct vec4d vec4d_sub(struct vec4d v1, struct vec4d v2) {
     struct vec4d result;
-
     vec4d_sub_to(v1, v2, &result);
-
     return result;
 }
 
@@ -86,9 +73,7 @@ void vec4d_scalar_multiply_to(struct vec4d v, double scalar,
 
 struct vec4d vec4d_scalar_multiply(struct vec4d v, double scalar) {
     struct vec4d result;
-
     vec4d_scalar_multiply_to(v, scalar, &result);
-
     return result;
 }
 
@@ -101,9 +86,7 @@ void vec4d_product_to(struct vec4d v1, struct vec4d v2, struct vec4d *dest) {
 
 struct vec4d vec4d_product(struct vec4d v1, struct vec4d v2) {
     struct vec4d result;
-
     vec4d_product_to(v1, v2, &result);
-
     return result;
 }
 

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "input/keyboard.h"
 #include "math/math_util.h"
+#include "math/quat.h"
 #include "renderer/camera.h"
 #include "math/vec3/vec3d.h"
 #include "math/vec4/vec4d.h"
